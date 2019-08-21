@@ -1,0 +1,608 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "2 AZs 4 Subnets VPC Template with Internet Gateway and Route Table",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [{
+        "Label": {
+          "default": "VPC Information"
+        },
+        "Parameters": ["Owner", "VpcName", "CidrVpc"]
+      }, {
+        "Label": {
+          "default": "Availability Zone 1"
+        },
+        "Parameters": ["AZ1", "Private1Name", "CidrPrivate1", "Public1Name", "CidrPublic1"]
+      }, {
+        "Label": {
+          "default": "Availability Zone 2"
+        },
+        "Parameters": ["AZ2", "Private2Name", "CidrPrivate2", "Public2Name", "CidrPublic2"]
+      }]
+    }
+  },
+  "Parameters": {
+    "Owner": {
+      "Description": "Owner Name",
+      "Type": "String",
+      "Default": "Nirmit Garg"
+    },
+    "VpcName": {
+      "Description": "Name of VPC (Ex: VPC-Dev-Offshore)",
+      "Type": "String",
+      "Default": "VPC-Dev-India"
+    },
+    "CidrVpc": {
+      "Description": "CIDR Block for VPC",
+      "Type": "String",
+      "Default": "10.23.0.0/16"
+    },
+    "AZ1": {
+      "Description": "Select AZ 1",
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+    },
+    "Private1Name": {
+      "Description": "Subnet Name - Private AZ 1 (Ex: SN-AZ1-Private-VPC-Dev-Offshore)",
+      "Type": "String",
+      "Default": "SN-AZ1-Private-VPC-Dev-India"
+    },
+    "CidrPrivate1": {
+      "Description": "CIDR for Private AZ1 Subnet",
+      "Type": "String",
+      "Default": "10.23.1.0/24"
+    },
+    "Public1Name": {
+      "Description": "Subnet Name - Public AZ 1 (Ex: SN-AZ1-Public-VPC-Dev-Offshore)",
+      "Type": "String",
+      "Default": "SN-AZ1-Public-VPC-Dev-India"
+    },
+    "CidrPublic1": {
+      "Description": "CIDR for Public AZ1 Subnet",
+      "Type": "String",
+      "Default": "10.23.3.0/24"
+    },
+    "AZ2": {
+      "Description": "Select AZ 2",
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+    },
+    "Private2Name": {
+      "Description": "Subnet Name - Private AZ 2 (Ex: SN-AZ2-Private-VPC-Dev-Offshore)",
+      "Type": "String",
+      "Default": "SN-AZ2-Private-VPC-Dev-India"
+    },
+    "CidrPrivate2": {
+      "Description": "CIDR for Private AZ2 Subnet",
+      "Type": "String",
+      "Default": "10.23.2.0/24"
+    },
+    "Public2Name": {
+      "Description": "Subnet Name - Public AZ 2 (Ex: SN-AZ2-Public-VPC-Dev-Offshore)",
+      "Type": "String",
+      "Default": "SN-AZ2-Public-VPC-Dev-India"
+    },
+    "CidrPublic2": {
+      "Description": "CIDR for Public AZ2 Subnet",
+      "Type": "String",
+      "Default": "10.23.4.0/24"
+    },
+    "WebServerImageId": {
+      "Description": "Web Server Image Id",
+      "Type": "String",
+      "Default": "ami-0889b8a448de4fc44"
+    },
+    "WebServerInstanceType": {
+      "Description": "Web Server Instance Type",
+      "Type": "String",
+      "Default": "t2.micro"
+    },
+    "WebserverKeyName": {
+      "Description": "Choose Key Name",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    }
+  },
+  "Mappings": {},
+  "Conditions": {},
+  "Resources": {
+    "VPCDev": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "CidrVpc"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "Private1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AZ1"
+        },
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "CidrBlock": {
+          "Ref": "CidrPrivate1"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Ref": "Private1Name"
+          }
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "Private2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AZ2"
+        },
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "CidrBlock": {
+          "Ref": "CidrPrivate2"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Ref": "Private2Name"
+          }
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "Public1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AZ1"
+        },
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "MapPublicIpOnLaunch": true,
+        "CidrBlock": {
+          "Ref": "CidrPublic1"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Ref": "Public1Name"
+          }
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "Public2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AZ2"
+        },
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "MapPublicIpOnLaunch": true,
+        "CidrBlock": {
+          "Ref": "CidrPublic2"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Ref": "Public2Name"
+          }
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "IGWDevVpc": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [{
+          "Key": "Name",
+          "Value": "Dev VPC Internet Gateway"
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "InternetGatewayId": {
+          "Ref": "IGWDevVpc"
+        }
+      }
+    },
+    "RTPublicInstanceDevVpc": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": "Route Table for Public Instance"
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      },
+    },
+    "RTPrivateInstanceDevVpc": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": "Route Table for Private Instance"
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }, {
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }]
+      }
+    },
+    "RouteIGW": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RTPublicInstanceDevVpc"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "IGWDevVpc"
+        }
+      }
+    },
+    "Public1RTAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Public1"
+        },
+        "RouteTableId": {
+          "Ref": "RTPublicInstanceDevVpc"
+        }
+      }
+    },
+    "Public2RTAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Public2"
+        },
+        "RouteTableId": {
+          "Ref": "RTPublicInstanceDevVpc"
+        }
+      }
+    },
+    "Private1RTAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Private1"
+        },
+        "RouteTableId": {
+          "Ref": "RTPrivateInstanceDevVpc"
+        }
+      }
+    },
+    "Private2RTAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Private2"
+        },
+        "RouteTableId": {
+          "Ref": "RTPrivateInstanceDevVpc"
+        }
+      }
+    },
+    "SGDevVPCELB": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "SGDevVPCELB",
+        "GroupDescription": "Security Group for ELB",
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,
+          "CidrIp": "0.0.0.0/0"
+        }],
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "Tags": [{
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }, {
+          "Key": "Name",
+          "Value": "SGDevVPCELB"
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }]
+      }
+    },
+    "SGDevVPCWebServer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "SGDevVPCWebServer",
+        "GroupDescription": "Security Group for Dev VPC Web Servers",
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": 22,
+          "ToPort": 22,
+          "CidrIp": "0.0.0.0/0"
+        }, {
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,
+          "SourceSecurityGroupId": {
+            "Ref": "SGDevVPCELB"
+          }
+        }],
+        "VpcId": {
+          "Ref": "VPCDev"
+        },
+        "Tags": [{
+          "Key": "Owner",
+          "Value": {
+            "Ref": "Owner"
+          }
+        }, {
+          "Key": "Name",
+          "Value": "SGDevVPCWebServer"
+        }, {
+          "Key": "VPC",
+          "Value": {
+            "Ref": "VpcName"
+          }
+        }]
+      }
+    },
+    "VPCDevELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "SecurityGroups": [{
+          "Ref": "SGDevVPCELB"
+        }],
+        "LoadBalancerName": "VPCDevELB",
+        "Listeners": [{
+          "LoadBalancerPort": "80",
+          "InstancePort": 80,
+          "Protocol": "HTTP"
+        }],
+        "HealthCheck": {
+          "Target": {
+            "Fn::Join": ["", ["HTTP:", "80", "/index.html"]]
+          },
+          "HealthyThreshold": "5",
+          "UnhealthyThreshold": "5",
+          "Interval": "10",
+          "Timeout": "5"
+        },
+        "Subnets": [{
+          "Ref": "Public1"
+        }, {
+          "Ref": "Public2"
+        }],
+        "Tags": [{
+          "Key": "Name",
+          "Value": "VPCDevELB"
+        }]
+      }
+    },
+    "LCVPCDevWebServer": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "LaunchConfigurationName": "LCVPCDevWebServer",
+        "ImageId": {
+          "Ref": "WebServerImageId"
+        },
+        "InstanceType": {
+          "Ref": "WebServerInstanceType"
+        },
+        "KeyName": {
+          "Ref": "WebserverKeyName"
+        },
+        "SecurityGroups": [{
+          "Ref": "SGDevVPCWebServer"
+        }],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -ex \n",
+                "yum install httpd -y \n",
+                "chkconfig httpd on \n",
+                "echo '<h1>Deployed by CloudFormation </h1>' > /var/www/html/index.html \n",
+                "service httpd start"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "ASGVPCDevWebServer": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "ASGVPCDevWebServer",
+        "LaunchConfigurationName": {
+          "Ref": "LCVPCDevWebServer"
+        },
+        "LoadBalancerNames": [{
+          "Ref": "VPCDevELB"
+        }],
+        "HealthCheckType": "ELB",
+        "HealthCheckGracePeriod": 60,
+        "MaxSize": "3",
+        "MinSize": "2",
+        "VPCZoneIdentifier": [{
+          "Ref": "Private1"
+        }, {
+          "Ref": "Private2"
+        }],
+        "Tags": [{
+          "Key": "Name",
+          "Value": "ASGVPCDevWebServer",
+          "PropagateAtLaunch": "True"
+        }]
+      }
+    },
+    "ScaleUpPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "PolicyType": "SimpleScaling",
+        "Cooldown": "10",
+        "AutoScalingGroupName": {
+          "Ref": "ASGVPCDevWebServer"
+        },
+        "ScalingAdjustment": 1
+      }
+    },
+    "ScaleDownPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "PolicyType": "SimpleScaling",
+        "Cooldown": "10",
+        "AutoScalingGroupName": {
+          "Ref": "ASGVPCDevWebServer"
+        },
+        "ScalingAdjustment": -1
+      }
+    },
+    "AlarmHighCPUUtilization": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": "1",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": "85",
+        "ActionsEnabled": "true",
+        "AlarmActions": [{
+          "Ref": "ScaleUpPolicy"
+        }],
+        "AlarmDescription": "CPU Utilization >= 85% for 1 Min",
+        "AlarmName": "DevVPCScaleUPAlarm",
+        "Dimensions": [{
+          "Name": "AutoScalingGroupName",
+          "Value": {
+            "Ref": "ASGVPCDevWebServer"
+          }
+        }]
+      }
+    },
+    "AlarmLowCPUUtilization": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "EvaluationPeriods": "1",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": "5",
+        "ActionsEnabled": "true",
+        "AlarmActions": [{
+          "Ref": "ScaleDownPolicy"
+        }],
+        "AlarmDescription": "CPU Utilization < 5% for 1 Min",
+        "AlarmName": "DevVPCScaleDownAlarmm",
+        "Dimensions": [{
+          "Name": "AutoScalingGroupName",
+          "Value": {
+            "Ref": "ASGVPCDevWebServer"
+          }
+        }]
+      }
+    }
+  },
+  "Outputs": {}
+}
